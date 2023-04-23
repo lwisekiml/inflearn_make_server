@@ -7,11 +7,14 @@ public class UserResponse {
     private String name;
     private Integer age;
 
-//    public UserResponse(long id, String name, Integer age) {
+    public UserResponse(long id, String name, Integer age) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+    }
+
     public UserResponse(long id, User user) {
         this.id = id;
-//        this.name = name;
-//        this.age = age;
         this.name = user.getName();
         this.age = user.getAge();
     }

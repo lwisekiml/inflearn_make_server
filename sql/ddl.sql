@@ -42,3 +42,15 @@ select * from fruit;
 delete from fruit where name = '사과'
 select * from fruit;
 
+# 13강. Spring에서 Database 사용하기
+create table user
+(
+    id   bigint auto_increment,
+    name varchar(25),
+    age  int,
+    primary key (id)
+);
+
+show tables;
+
+select * from user;
