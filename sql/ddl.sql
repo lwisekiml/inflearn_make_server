@@ -52,5 +52,5 @@ create table user
 );
 
 show tables;
-
+insert into user (name, age) values ('A', null);
 select * from user;
