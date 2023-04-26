@@ -3,9 +3,7 @@ package com.group.libraryapp.controller.user;
 import com.group.libraryapp.dto.user.request.UserCreateRequest;
 import com.group.libraryapp.dto.user.request.UserUpdateRequest;
 import com.group.libraryapp.dto.user.response.UserResponse;
-import com.group.libraryapp.service.fruit.FruitService;
 import com.group.libraryapp.service.user.UserService;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,11 +12,9 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final FruitService fruitService;
 
-    public UserController(UserService userService, @Qualifier("main") FruitService fruitService) { // 인스터스화 한적없다. JdbcTemplate에 의존(설정해준 적 X)
+    public UserController(UserService userService) { // 인스터스화 한적없다. JdbcTemplate에 의존(설정해준 적 X)
         this.userService = userService;
-        this.fruitService = fruitService;
     }
 
     @PostMapping("/user")

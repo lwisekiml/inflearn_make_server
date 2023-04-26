@@ -46,7 +46,7 @@ select * from fruit;
 create table user
 (
     id   bigint auto_increment,
-    name varchar(25),
+    name varchar(20),
     age  int,
     primary key (id)
 );
