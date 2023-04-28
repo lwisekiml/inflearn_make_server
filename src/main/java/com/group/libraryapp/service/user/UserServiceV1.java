@@ -26,7 +26,7 @@ public class UserServiceV1 {
     }
 
     public void updateUser(UserUpdateRequest request) {
-        if (userJdbcRepository.isUserNotExist(request.getId())) { // user가 존재하지 않는다면
+        if (userJdbcRepository.isUserNotExist(request.getId())) { // user가 존재하지 않는다면(비어 있다면)
             throw new IllegalArgumentException();
         }
 
