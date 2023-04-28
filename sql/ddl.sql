@@ -46,7 +46,7 @@ select * from fruit;
 create table user
 (
     id   bigint auto_increment,
-    name varchar(20),
+    name varchar(25),
     age  int,
     primary key (id)
 );
@@ -54,3 +54,14 @@ create table user
 show tables;
 insert into user (name, age) values ('A', null);
 select * from user;
+
+
+create table book (
+                      id bigint auto_increment,
+                      name varchar(255),
+                      primary key (id)
+);
+
+show tables;
+
+select * from book;
