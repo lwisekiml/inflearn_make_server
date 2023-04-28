@@ -11,4 +11,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     User findByName(String name);
 
     boolean existsByName(String name);
+
+    long countByAge(Integer age); // 해당 나이를 가진 명수 반환
 }
