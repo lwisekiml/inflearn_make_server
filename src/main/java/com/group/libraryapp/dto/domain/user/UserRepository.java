@@ -8,7 +8,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 유저가 없다면 null 반환
     // SELECT * FROM user WHERE name = ?
-    Optional<User> findByName(String name);
+    User findByName(String name);
 
-
+    boolean existsByName(String name);
 }
