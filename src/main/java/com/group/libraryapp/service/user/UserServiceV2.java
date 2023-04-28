@@ -36,9 +36,19 @@ public class UserServiceV2 {
 
     public void updateUser(UserUpdateRequest request) {
         User user = userRepository.findById(request.getId())
-                .orElseThrow(IllegalArgumentException::new); // User가 비어있는 경우 에러를 던짐
+                .orElseThrow(IllegalArgumentException::new); // User 가 비어있는 경우 에러를 던짐
 
         user.updateName(request.getName());
         userRepository.save(user);
+    }
+
+    public void deleteUser(String name) {
+        // SELECT * FROM user WHERE name = ?
+        User user = userRepository.findByName(name);
+        if (user == null) {
+            throw new IllegalArgumentException();
+        }
+
+        userRepository.delete(user);
     }
 }
