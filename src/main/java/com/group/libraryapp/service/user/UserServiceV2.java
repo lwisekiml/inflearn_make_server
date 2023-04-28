@@ -44,15 +44,8 @@ public class UserServiceV2 {
 
     public void deleteUser(String name) {
         // SELECT * FROM user WHERE name = ?
-//        User user = userRepository.findByName(name)
-//                .orElseThrow(IllegalArgumentException::new);
-//        userRepository.delete(user);
-
-        if (!userRepository.existsByName(name)) {
-            throw new IllegalArgumentException();
-        }
-
-        User user = userRepository.findByName(name);
+        User user = userRepository.findByName(name)
+                .orElseThrow(IllegalArgumentException::new);
         userRepository.delete(user);
     }
 }
