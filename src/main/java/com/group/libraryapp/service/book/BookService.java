@@ -52,7 +52,7 @@ public class BookService {
 
         // 5. 유저 정보와 책 정보를 기반으로 UserLoanHistory를 저장
 //        userLoanHistoryRepository.save(new UserLoanHitory(user.getId(), book.getName(), false)); // 무조건 false이라 아래처럼
-        userLoanHistoryRepository.save(new UserLoanHistory(user.getId(), book.getName()));
+        userLoanHistoryRepository.save(new UserLoanHistory(user, book.getName()));
     }
 
     @Transactional

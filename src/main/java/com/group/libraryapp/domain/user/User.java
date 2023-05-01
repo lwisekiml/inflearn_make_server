@@ -1,6 +1,10 @@
 package com.group.libraryapp.domain.user;
 
+import com.group.libraryapp.domain.user.loanhistory.UserLoanHistory;
+
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class User {
@@ -16,7 +20,11 @@ public class User {
 
     private  Integer age;
 
-    protected User() {} // JPA를 사용하기 위해서는 기본 생성자가 꼭 필요
+    // 1:N 관계 (User : UserLoanHistory)
+    @OneToMany(mappedBy = "user") // 연관관계 주인은 UserLoanHistory라서 mappedBy는 여기에 함
+    private List<UserLoanHistory> userLoanHistories = new ArrayList<>(); // N개를 표현하기 위해 List로 함
+
+   protected User() {} // JPA를 사용하기 위해서는 기본 생성자가 꼭 필요
 
     public User(String name, Integer age) {
         if (name == null || name.isBlank()) {
