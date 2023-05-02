@@ -26,7 +26,7 @@ public class UserServiceV2 {
     @Transactional
     public void saveUser(UserCreateRequest request) {
         userRepository.save(new User(request.getName(), request.getAge())); // User 객체 반환
-        throw new IllegalArgumentException();
+//        throw new IllegalArgumentException();
 //        User user = userRepository.save(new User(request.getName(), request.getAge()));
 //        System.out.println("user.getId() = " + user.getId());
 
