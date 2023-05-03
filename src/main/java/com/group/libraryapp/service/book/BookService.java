@@ -59,7 +59,6 @@ public class BookService {
         User user = userRepository.findByName(request.getUserName())
                 .orElseThrow(IllegalArgumentException::new);
 
-        System.out.println("!!!!!!!!!!!!!!!!!111111111111111111111111111111111");
         user.returnBook(request.getBookName());
     }
 }
