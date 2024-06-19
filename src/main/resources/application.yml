@@ -32,7 +32,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: none # 스프링이 시작할 때 DB에 있는 테이블을 어떻게 처리할지
+      ddl-auto: create # 스프링이 시작할 때 DB에 있는 테이블을 어떻게 처리할지
     properties:
       hibernate:
         show_sql: true # JPA를 사용해 DB에 SQL을 날릴 때 SQL을 보여줄 것인가
