@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter @Setter
@@ -21,12 +24,15 @@ public class Employee {
     @Enumerated(EnumType.STRING)
     private EmployeeType role;
 
-    private String birthday;
-    private String workStartDate;
+    private LocalDate birthday;
+    private LocalDate workStartDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
     private Team team;
+
+    @OneToMany(mappedBy = "employee")
+    private List<Attendance> attendances = new ArrayList<>();
 
     public Employee(GetEmployeeDTO.RegEmployeeDTO regEmployeeDTO, Team team) {
         this.setTeam(team);
@@ -34,5 +40,14 @@ public class Employee {
         this.role = regEmployeeDTO.getRole();
         this.birthday = regEmployeeDTO.getBirthday();
         this.workStartDate = regEmployeeDTO.getWorkStartDate();
+    }
+
+    // TestDataInit
+    public Employee(String name, EmployeeType role, LocalDate birthday, LocalDate workStartDate, Team team) {
+        this.name = name;
+        this.role = role;
+        this.birthday = birthday;
+        this.workStartDate = workStartDate;
+        this.team = team;
     }
 }

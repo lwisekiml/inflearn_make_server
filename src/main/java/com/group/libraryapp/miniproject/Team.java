@@ -30,4 +30,10 @@ public class Team {
         this.name = regTeamDTO.getName();
         this.manager = regTeamDTO.getManager();
     }
+
+    // TestDataInit
+    public Team(String name, String manager) {
+        this.name = name;
+        this.manager = manager;
+    }
 }
