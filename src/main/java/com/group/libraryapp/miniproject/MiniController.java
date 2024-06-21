@@ -63,6 +63,8 @@ public class MiniController {
             return "ok";
         }
 
+        // 연가를 썼다면 -> "오늘은 연차입니다."
+
         // 퇴근했고, 퇴근 날짜가 오늘이라면(없어도 될거 같지만 한 걸음 더에 있는 내용이라 추가)
         if (attendance.get().getWorkEndDateTime() != null && attendance.get().getWorkEndDateTime().toLocalDate().isEqual(LocalDate.now())) {
             return "퇴근하고 다시 출근 등록할 수 없습니다.";
@@ -77,6 +79,7 @@ public class MiniController {
         // 출근과 같은 메소드를 만들면 되지만 다른 방시긍로 해봄
         Attendance attendance = attendanceRepository.findFirstByEmployeeIdOrderByWorkStartDateTimeDesc(employeeId);
 
+        // 오늘 출근했는지
         if (attendance.getWorkStartDateTime().toLocalDate().isEqual(LocalDate.now())) {
             attendance.setWorkEndDateTime(LocalDateTime.now());
             attendanceRepository.flush();
@@ -111,7 +114,43 @@ public class MiniController {
 
         List<AttendanceDto> attendanceDtos = attendanceList.stream().map(AttendanceDto::toAttendanceDto).collect(Collectors.toList());
 
+        // 한달 목록이 다 나오도록 수정 필요
+
         return new ResponseAttendance(attendanceDtos, sum);
+    }
+
+    // 남은 연차 확인
+    @GetMapping("/annual")
+    public String annual(@RequestParam("id") Long employeeId) {
+        Optional<Employee> employee = employeeRepository.findById(employeeId);
+        return employee.map(value -> String.valueOf(value.getAnnual())).orElse("없는 직원입니다.");
+    }
+
+    // 연차 신청
+    @PostMapping("/annual")
+    public String annualReg(@RequestBody GetEmployeeDTO.AnnualEmployeeDTO annualEmployeeDTO) {
+
+        // employee 추가시 입사 년도에 따라 연차 차등 지급
+
+        // 올해 입사 : 11 , 그 외 : 15
+        // Attendance table 에 usingDayOff 추가
+        // employee에 연차 개수 추가(올해 입사 : 11개, 그 외 : 15개)
+        // 연차 신청시 employee 연차 개수 확인 후, 갯수가 남아 있으면 사용(연차 개수 - 1), 없으면 연차 사용 불가 -> "사용할 수 있는 연차가 없습니다."
+        Optional<Employee> findEmployee = employeeRepository.findById(annualEmployeeDTO.getId());
+        if (findEmployee.isEmpty()) {
+            return "없는 직원 입니다.";
+        }
+        Employee employee = findEmployee.get();
+        if (employee.getAnnual() > 0) {
+            employee.setAnnual(employee.getAnnual() - 1);
+            LocalDateTime localDateTime = annualEmployeeDTO.getAnnual().atTime(0, 0);
+            // 연차 사용시 Attendance의 usingdayOff를 true로 수정
+            attendanceRepository.save(new Attendance(employee, localDateTime, localDateTime, 0, true));
+        } else {
+            return "남은 연차가 없습니다.";
+        }
+
+        return "ok";
     }
 }
 

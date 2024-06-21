@@ -23,8 +23,20 @@ public class Attendance {
     private LocalDateTime workEndDateTime;
     private int workingMinutes;
 
+    private boolean usingDayoff;
+
+    // 출근 안했다면
     public Attendance(Employee employee, LocalDateTime workStartDateTime) {
         this.employee = employee;
         this.workStartDateTime = workStartDateTime;
+    }
+
+    // TestDataInit
+    public Attendance(Employee employee, LocalDateTime workStartDateTime, LocalDateTime workEndDateTime, int workingMinutes, boolean usingDayoff) {
+        this.employee = employee;
+        this.workStartDateTime = workStartDateTime;
+        this.workEndDateTime = workEndDateTime;
+        this.workingMinutes = workingMinutes;
+        this.usingDayoff = usingDayoff;
     }
 }

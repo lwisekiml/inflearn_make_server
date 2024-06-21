@@ -25,7 +25,8 @@ public class Employee {
     private EmployeeType role;
 
     private LocalDate birthday;
-    private LocalDate workStartDate;
+    private LocalDate workStartDate; // 입사 날짜 : 2024-06-01
+    private int annual;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
@@ -34,20 +35,33 @@ public class Employee {
     @OneToMany(mappedBy = "employee")
     private List<Attendance> attendances = new ArrayList<>();
 
+    // postman 직원 등록
     public Employee(GetEmployeeDTO.RegEmployeeDTO regEmployeeDTO, Team team) {
         this.setTeam(team);
         this.name = regEmployeeDTO.getName();
         this.role = regEmployeeDTO.getRole();
         this.birthday = regEmployeeDTO.getBirthday();
         this.workStartDate = regEmployeeDTO.getWorkStartDate();
+
+        if (workStartDate.getYear() == LocalDate.now().getYear()) {
+            annual = StaticVariable.THIS_YEAR_WORKING_START_ANNUAL;
+        } else {
+            annual = StaticVariable.ANNUAL;
+        }
     }
 
     // TestDataInit
     public Employee(String name, EmployeeType role, LocalDate birthday, LocalDate workStartDate, Team team) {
+        this.team = team;
         this.name = name;
         this.role = role;
         this.birthday = birthday;
         this.workStartDate = workStartDate;
-        this.team = team;
+
+        if (workStartDate.getYear() == LocalDate.now().getYear()) {
+            annual = StaticVariable.THIS_YEAR_WORKING_START_ANNUAL;
+        } else {
+            annual = StaticVariable.ANNUAL;
+        }
     }
 }

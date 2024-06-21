@@ -53,6 +53,15 @@ public class GetEmployeeDTO {
     @RequiredArgsConstructor
     public static class WorkingEmployeeDTO {
         private Long id;
-        private YearMonth yearMonth;
+        private YearMonth yearMonth; // 2024-06
     }
+
+    @Data
+    @AllArgsConstructor
+    @RequiredArgsConstructor
+    public static class AnnualEmployeeDTO { // 연차 사용 날짜 신청
+        private Long id;
+        private LocalDate annual; // 2024-06-01
+    }
+
 }

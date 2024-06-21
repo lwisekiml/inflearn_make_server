@@ -28,8 +28,8 @@ public class TestDataInit {
         teamRepository.save(teamB);
         teamRepository.save(teamC);
 
-        Employee employee1 = new Employee("kim", EmployeeType.MEMBER, LocalDate.of(1989, 1, 1), LocalDate.of(2024, 1, 1), teamA);
-        Employee employee2 = new Employee("lee", EmployeeType.MEMBER, LocalDate.of(1989, 1, 2), LocalDate.of(2024, 1, 2), teamB);
+        Employee employee1 = new Employee("kim", EmployeeType.MEMBER, LocalDate.of(1989, 1, 1), LocalDate.of(2022, 1, 1), teamA);
+        Employee employee2 = new Employee("lee", EmployeeType.MEMBER, LocalDate.of(1989, 1, 2), LocalDate.of(2023, 1, 2), teamB);
         Employee employee3 = new Employee("park", EmployeeType.MANAGER, LocalDate.of(1989, 1, 3), LocalDate.of(2024, 1, 3), teamA);
         Employee employee4 = new Employee("sin", EmployeeType.MANAGER, LocalDate.of(1989, 1, 4), LocalDate.of(2024, 1, 4), teamB);
         Employee employee5 = new Employee("cha", EmployeeType.MEMBER, LocalDate.of(1989, 1, 5), LocalDate.of(2024, 1, 5), teamC);
@@ -42,29 +42,28 @@ public class TestDataInit {
 
         YearMonth yearMonth = YearMonth.from(LocalDate.now());
 //        yearMonth.lengthOfMonth();
+        int day = LocalDate.now().getDayOfMonth();
 
-        for (int i = 1; i <= yearMonth.lengthOfMonth(); i++) {
+        for (int i = 1; i <= LocalDate.now().getDayOfMonth(); i++) {
             attendanceRepository.save(new Attendance(
-                            (long) i,
                             employee1,
                             LocalDateTime.of(2024, 6, i, 9, 0),
                             LocalDateTime.of(2024, 6, i, 9, 0).plusHours(5),
-                            0
+                            0,
+                            false
                     )
             );
         }
 
-        for (int i = 31; i <= yearMonth.lengthOfMonth() + 30; i++) {
-            attendanceRepository.save(new Attendance(
-                            (long) i,
-                            employee2,
-                            LocalDateTime.of(2024, 6, i - 30, 9, 0),
-                            LocalDateTime.of(2024, 6, i - 30, 9, 0).plusHours(7),
-                            0
-                    )
-            );
-        }
-
-
+//        for (int i = 1; i <= LocalDate.now().getDayOfMonth(); i++) {
+//            attendanceRepository.save(new Attendance(
+//                            employee2,
+//                            LocalDateTime.of(2024, 6, i, 9, 0),
+//                            LocalDateTime.of(2024, 6, i, 9, 0).plusHours(7),
+//                            0,
+//                            false
+//                    )
+//            );
+//        }
     }
 }
