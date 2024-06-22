@@ -7,12 +7,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 @Getter
+@Builder
 public class AttendanceDto {
     private String date; // 2024-06-01
     private int workingMinutes;
     private boolean usingDayoff; // 연차 사용 유무
 
-    @Builder
     public AttendanceDto(String date, int workingMinutes, boolean usingDayoff) {
         this.date = date;
         this.workingMinutes = workingMinutes;

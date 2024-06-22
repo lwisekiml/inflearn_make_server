@@ -20,8 +20,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     @Query("select a from Attendance a left join a.employee " +
             "where a.employee.id = :employeeId " +
-            "and date_format(a.workStartDateTime , '%Y-%m') = :localMonth")
-    List<Attendance> findAllByWorkStartDate(@Param("employeeId") Long employeeId, @Param("localMonth") String localMonth);
+            "and date_format(a.workStartDateTime , '%Y-%m') = :yearMonth")
+    List<Attendance> findAllByWorkStartDate(@Param("employeeId") Long employeeId, @Param("yearMonth") String yearMonth);
 
 //    List<Attendance> findAllByEmployeeIdAndWorkStartDateTimeBetween(Long memberId, LocalDateTime start, LocalDateTime end);
 }

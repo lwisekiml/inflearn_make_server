@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -63,7 +64,10 @@ public class MiniController {
             return "ok";
         }
 
-        // 연가를 썼다면 -> "오늘은 연차입니다."
+        // 연차를 쓴 날 이라면
+        if (attendance.get().isUsingDayoff()) {
+            return "오늘은 연차를 사용한 날 입니다.";
+        }
 
         // 퇴근했고, 퇴근 날짜가 오늘이라면(없어도 될거 같지만 한 걸음 더에 있는 내용이라 추가)
         if (attendance.get().getWorkEndDateTime() != null && attendance.get().getWorkEndDateTime().toLocalDate().isEqual(LocalDate.now())) {
@@ -82,6 +86,8 @@ public class MiniController {
         // 오늘 출근했는지
         if (attendance.getWorkStartDateTime().toLocalDate().isEqual(LocalDate.now())) {
             attendance.setWorkEndDateTime(LocalDateTime.now());
+            // 근무 시간 저장(실제 상황시 필요)
+//            attendance.setWorkingMinutes((int)ChronoUnit.MINUTES.between(attendance.getWorkStartDateTime(), attendance.getWorkEndDateTime()));
             attendanceRepository.flush();
             return "ok";
         }
@@ -98,25 +104,55 @@ public class MiniController {
 //        LocalDate endOfMonth = yearMonth.atEndOfMonth();
 //        List<Attendance> timeBetween = attendanceRepository.findAllByEmployeeIdAndWorkStartDateTimeBetween(workingEmployeeDTO.getId(), startOfMonth.atStartOfDay(), endOfMonth.atStartOfDay());
 
-        String localMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+//        String localMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
 
-        List<Attendance> attendanceList = attendanceRepository.findAllByWorkStartDate(workingEmployeeDTO.getId(), localMonth);
-        for (Attendance attendance : attendanceList) {
-            LocalDateTime workStartDateTime = attendance.getWorkStartDateTime();
-            LocalDateTime workEndDateTime = attendance.getWorkEndDateTime();
-            attendance.setWorkingMinutes((int)ChronoUnit.MINUTES.between(workStartDateTime, workEndDateTime));
+        int year = workingEmployeeDTO.getYearMonth().getYear();
+        int month = workingEmployeeDTO.getYearMonth().getMonth().getValue();
+
+        String yearMonth = workingEmployeeDTO.getYearMonth().toString();
+
+        List<Attendance> attendanceList = attendanceRepository.findAllByWorkStartDate(workingEmployeeDTO.getId(), yearMonth);
+        List<AttendanceDto> attendanceDtoList = new ArrayList<>();
+
+        for (int i = 1, j = 0; i <= workingEmployeeDTO.getYearMonth().lengthOfMonth(); i++) {
+                if (j < attendanceList.size() && LocalDate.of(year, month, i).equals(LocalDate.from(attendanceList.get(j).getWorkEndDateTime()))) {
+                    // 실제 상황에서는 필요없는 코드
+                    LocalDateTime workStartDateTime = attendanceList.get(j).getWorkStartDateTime();
+                    LocalDateTime workEndDateTime = attendanceList.get(j).getWorkEndDateTime();
+                    attendanceList.get(j).setWorkingMinutes((int)ChronoUnit.MINUTES.between(workStartDateTime, workEndDateTime));
+
+                    attendanceDtoList.add(AttendanceDto.toAttendanceDto(attendanceList.get(j++)));
+                } else {
+                    attendanceDtoList.add(new AttendanceDto(LocalDate.of(year, month, i).toString(), 0, false));
+                }
         }
+
+//        for (AttendanceDto attendanceDto : attendanceDtoList) {
+//            for (Attendance attendance : attendanceList) {
+//                LocalDateTime workStartDateTime = attendance.getWorkStartDateTime();
+//                LocalDateTime workEndDateTime = attendance.getWorkEndDateTime();
+//                attendance.setWorkingMinutes((int)ChronoUnit.MINUTES.between(workStartDateTime, workEndDateTime));
+//                if (attendanceDto.getDate().equals(attendance.getWorkStartDateTime().toLocalDate().toString())) {
+//                    attendanceDto = AttendanceDto.toAttendanceDto(attendance);
+//                    break;
+//                }
+//            }
+//        }
+
+//        for (Attendance attendance : attendanceList) {
+//            LocalDateTime workStartDateTime = attendance.getWorkStartDateTime();
+//            LocalDateTime workEndDateTime = attendance.getWorkEndDateTime();
+//            attendance.setWorkingMinutes((int)ChronoUnit.MINUTES.between(workStartDateTime, workEndDateTime));
+//        }
+//        attendanceRepository.flush();
 
         int sum = attendanceList.stream()
                 .map(Attendance::getWorkingMinutes)
                 .mapToInt(Integer::intValue)
                 .sum();
 
-        List<AttendanceDto> attendanceDtos = attendanceList.stream().map(AttendanceDto::toAttendanceDto).collect(Collectors.toList());
 
-        // 한달 목록이 다 나오도록 수정 필요
-
-        return new ResponseAttendance(attendanceDtos, sum);
+        return new ResponseAttendance(attendanceDtoList, sum);
     }
 
     // 남은 연차 확인
