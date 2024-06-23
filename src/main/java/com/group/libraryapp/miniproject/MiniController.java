@@ -3,13 +3,12 @@ package com.group.libraryapp.miniproject;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -99,13 +98,7 @@ public class MiniController {
     @PostMapping("/workingHours")
     public ResponseAttendance workingHours(@RequestBody GetEmployeeDTO.WorkingEmployeeDTO workingEmployeeDTO) {
 
-//        YearMonth yearMonth = YearMonth.from(LocalDate.now());
-//        LocalDate startOfMonth = yearMonth.atDay(1);
-//        LocalDate endOfMonth = yearMonth.atEndOfMonth();
-//        List<Attendance> timeBetween = attendanceRepository.findAllByEmployeeIdAndWorkStartDateTimeBetween(workingEmployeeDTO.getId(), startOfMonth.atStartOfDay(), endOfMonth.atStartOfDay());
-
-//        String localMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
-
+        // 1
         int year = workingEmployeeDTO.getYearMonth().getYear();
         int month = workingEmployeeDTO.getYearMonth().getMonth().getValue();
 
@@ -114,37 +107,47 @@ public class MiniController {
         List<Attendance> attendanceList = attendanceRepository.findAllByWorkStartDate(workingEmployeeDTO.getId(), yearMonth);
         List<AttendanceDto> attendanceDtoList = new ArrayList<>();
 
-        for (int i = 1, j = 0; i <= workingEmployeeDTO.getYearMonth().lengthOfMonth(); i++) {
-                if (j < attendanceList.size() && LocalDate.of(year, month, i).equals(LocalDate.from(attendanceList.get(j).getWorkEndDateTime()))) {
-                    // 실제 상황에서는 필요없는 코드
-                    LocalDateTime workStartDateTime = attendanceList.get(j).getWorkStartDateTime();
-                    LocalDateTime workEndDateTime = attendanceList.get(j).getWorkEndDateTime();
-                    attendanceList.get(j).setWorkingMinutes((int)ChronoUnit.MINUTES.between(workStartDateTime, workEndDateTime));
+        for (int date = 1, attendanceListIndex = 0; date <= workingEmployeeDTO.getYearMonth().lengthOfMonth(); date++) {
+            if (attendanceListIndex < attendanceList.size()
+                    && LocalDate.of(year, month, date).equals(LocalDate.from(attendanceList.get(attendanceListIndex).getWorkEndDateTime()))) {
+                // 실제 상황에서는 밑에 세 줄은 필요없는 코드
+                LocalDateTime workStartDateTime = attendanceList.get(attendanceListIndex).getWorkStartDateTime();
+                LocalDateTime workEndDateTime = attendanceList.get(attendanceListIndex).getWorkEndDateTime();
+                attendanceList.get(attendanceListIndex).setWorkingMinutes((int)ChronoUnit.MINUTES.between(workStartDateTime, workEndDateTime));
 
-                    attendanceDtoList.add(AttendanceDto.toAttendanceDto(attendanceList.get(j++)));
-                } else {
-                    attendanceDtoList.add(new AttendanceDto(LocalDate.of(year, month, i).toString(), 0, false));
-                }
+                attendanceDtoList.add(AttendanceDto.toAttendanceDto(attendanceList.get(attendanceListIndex++)));
+            } else {
+                attendanceDtoList.add(new AttendanceDto(LocalDate.of(year, month, date).toString(), 0, false));
+            }
         }
 
-//        for (AttendanceDto attendanceDto : attendanceDtoList) {
-//            for (Attendance attendance : attendanceList) {
-//                LocalDateTime workStartDateTime = attendance.getWorkStartDateTime();
-//                LocalDateTime workEndDateTime = attendance.getWorkEndDateTime();
-//                attendance.setWorkingMinutes((int)ChronoUnit.MINUTES.between(workStartDateTime, workEndDateTime));
-//                if (attendanceDto.getDate().equals(attendance.getWorkStartDateTime().toLocalDate().toString())) {
-//                    attendanceDto = AttendanceDto.toAttendanceDto(attendance);
-//                    break;
-//                }
+        // 2. 실제 상황으로 하려면 1번과 비슷해져서 실제 상황은 구현 안함
+//        LocalDate startDate = workingEmployeeDTO.getYearMonth().atDay(1);
+//        LocalDate endDate = workingEmployeeDTO.getYearMonth().atEndOfMonth();
+//
+//        List<Attendance> attendanceList = attendanceRepository.findAllByEmployeeIdAndWorkStartDateTimeBetween(
+//                workingEmployeeDTO.getId(), startDate.atStartOfDay(), endDate.atStartOfDay());
+//        Map<LocalDate, Integer> attendanceMap = new HashMap<>();
+//        Map<LocalDate, Boolean> usingDayoffMap = new HashMap<>();
+//
+//        for (Attendance attendance : attendanceList) {
+//            if (attendance.getWorkEndDateTime() != null) {
+//                LocalDate date = attendance.getWorkStartDateTime().toLocalDate();
+//                int workingMinutes = (int) Duration.between(attendance.getWorkStartDateTime(), attendance.getWorkEndDateTime()).toMinutes();
+//                attendanceMap.put(date, workingMinutes);
+//
+//                usingDayoffMap.put(date, attendance.isUsingDayoff());
 //            }
 //        }
-
-//        for (Attendance attendance : attendanceList) {
-//            LocalDateTime workStartDateTime = attendance.getWorkStartDateTime();
-//            LocalDateTime workEndDateTime = attendance.getWorkEndDateTime();
-//            attendance.setWorkingMinutes((int)ChronoUnit.MINUTES.between(workStartDateTime, workEndDateTime));
+//
+//        List<AttendanceDto> attendanceDtoList = new ArrayList<>();
+//        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+//            int workingMinutes = attendanceMap.getOrDefault(date, 0);
+//            boolean usingDayoff = usingDayoffMap.getOrDefault(date, false);
+//
+//            attendanceDtoList.add(AttendanceDto.create(date.toString(), workingMinutes, usingDayoff));
 //        }
-//        attendanceRepository.flush();
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         int sum = attendanceList.stream()
                 .map(Attendance::getWorkingMinutes)

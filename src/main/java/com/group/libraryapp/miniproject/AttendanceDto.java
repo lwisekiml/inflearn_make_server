@@ -26,4 +26,12 @@ public class AttendanceDto {
                 .usingDayoff(attendance.isUsingDayoff())
                 .build();
     }
+
+    public static AttendanceDto create(String date, int workingMinutes, boolean usingDayoff) {
+        return AttendanceDto.builder()
+                .date(date)
+                .workingMinutes(workingMinutes)
+                .usingDayoff(usingDayoff)
+                .build();
+    }
 }
