@@ -1,25 +1,25 @@
 package com.group.libraryapp.miniproject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.xml.sax.SAXException;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
-
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.io.BufferedReader;
-import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,6 +28,9 @@ public class MiniController {
     private final TeamRepository teamRepository;
     private final EmployeeRepository employeeRepository;
     private final AttendanceRepository attendanceRepository;
+
+    @Value("${kakao.admin}")
+    private String kakaoAdmin;
 
     @GetMapping("/team")
     public List<GetTeamDTO> team() {
@@ -203,32 +206,39 @@ public class MiniController {
     }
 
     @GetMapping("/overtime")
-    public String overtime(@RequestParam("id") Long employeeId) throws IOException {
-        StringBuilder urlBuilder = new StringBuilder("http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getAnniversaryInfo"); /*URL*/
-        urlBuilder.append("?" + URLEncoder.encode("serviceKey", StandardCharsets.UTF_8) + "="); /*Service Key*/
-        urlBuilder.append("&" + URLEncoder.encode("pageNo", StandardCharsets.UTF_8) + "=" + URLEncoder.encode("1", StandardCharsets.UTF_8)); /*페이지번호*/
-        urlBuilder.append("&" + URLEncoder.encode("numOfRows", StandardCharsets.UTF_8) + "=" + URLEncoder.encode("10", StandardCharsets.UTF_8)); /*한 페이지 결과 수*/
-        urlBuilder.append("&" + URLEncoder.encode("solYear", StandardCharsets.UTF_8) + "=" + URLEncoder.encode("2019", StandardCharsets.UTF_8)); /*연*/
-        urlBuilder.append("&" + URLEncoder.encode("solMonth", StandardCharsets.UTF_8) + "=" + URLEncoder.encode("02", StandardCharsets.UTF_8)); /*월*/
-        URL url = new URL(urlBuilder.toString());
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Content-type", "application/json");
-        System.out.println("Response code: " + conn.getResponseCode());
-        BufferedReader rd;
-        if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-            rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        } else {
-            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-        }
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = rd.readLine()) != null) {
-            sb.append(line);
-        }
-        rd.close();
-        conn.disconnect();
-        System.out.println(sb.toString());
+    public String overtime(@RequestBody GetEmployeeDTO.OvertimeEmployeeDTO overtimeEmployeeDTO) throws IOException, ParserConfigurationException, SAXException {
+
+        LocalDateTime startTime = LocalDateTime.of(2024, 6, 1, 0, 0, 1);
+        LocalDateTime endTime = LocalDateTime.of(2024, 6, 30, 0, 0, 1);
+
+        // LocalDateTime을 ZonedDateTime으로 변환 (UTC)
+        ZonedDateTime zonedDateTimeStart = startTime.atZone(ZoneId.of("UTC"));
+        ZonedDateTime zonedDateTimeEnd = endTime.atZone(ZoneId.of("UTC"));
+
+        // ISO 8601 형식으로 변환
+        // 참고 : https://zhfvkq.tistory.com/37
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
+        String startFormattedString = zonedDateTimeStart.format(formatter);
+        String endFormattedString = zonedDateTimeEnd.format(formatter);
+
+        String apiUrl = "https://kapi.kakao.com";
+        WebClient webClient = WebClient.create(apiUrl);
+
+        String response = webClient
+                .get()
+                .uri(url -> url.path("/v2/api/calendar/holidays")
+                        .queryParam("from", startFormattedString)
+                        .queryParam("to", endFormattedString)
+                        .build()
+                )
+                .header(HttpHeaders.AUTHORIZATION, "KakaoAK " + kakaoAdmin)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        // json 파싱
+        ObjectMapper objectMapper = new ObjectMapper();
+        OvertimeDto overtimeDto = objectMapper.readValue(response, OvertimeDto.class);
 
         return "ok";
     }

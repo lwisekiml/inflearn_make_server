@@ -25,6 +25,7 @@ spring:
   config:
     activate:
       on-profile: dev
+    import: optional:file:.env[.properties]
   datasource:
     url: "jdbc:mysql://localhost/library"
     username: "root"
@@ -38,3 +39,6 @@ spring:
         show_sql: true # JPA를 사용해 DB에 SQL을 날릴 때 SQL을 보여줄 것인가
         format_sql: true # SQL을 보여줄 때 예쁘게 포맷팅 할 것인가
         dialect: org.hibernate.dialect.MySQL8Dialect # 이 옵션으로 DB를 특정하면 조금씩 다른 SQL을 수정해준다
+
+kakao:
+  admin: ${KAKAO_ADMIN_KEY}
