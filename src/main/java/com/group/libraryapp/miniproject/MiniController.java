@@ -6,20 +6,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @RestController
 @RequiredArgsConstructor
@@ -206,14 +200,15 @@ public class MiniController {
     }
 
     @GetMapping("/overtime")
-    public String overtime(@RequestBody GetEmployeeDTO.OvertimeEmployeeDTO overtimeEmployeeDTO) throws IOException, ParserConfigurationException, SAXException {
+    public String overtime(@RequestBody GetEmployeeDTO.OvertimeEmployeeDTO overtimeEmployeeDTO) throws IOException {
 
-        LocalDateTime startTime = LocalDateTime.of(2024, 6, 1, 0, 0, 1);
-        LocalDateTime endTime = LocalDateTime.of(2024, 6, 30, 0, 0, 1);
+        YearMonth yearMonth = overtimeEmployeeDTO.getYearMonth();
+        LocalDateTime startDateTime = LocalDateTime.of(yearMonth.getYear(), yearMonth.getMonthValue(), 1, 0, 0, 1);
+        LocalDateTime endDateTime = LocalDateTime.of(yearMonth.getYear(), yearMonth.getMonthValue(), yearMonth.lengthOfMonth(), 0, 0, 1);
 
         // LocalDateTime을 ZonedDateTime으로 변환 (UTC)
-        ZonedDateTime zonedDateTimeStart = startTime.atZone(ZoneId.of("UTC"));
-        ZonedDateTime zonedDateTimeEnd = endTime.atZone(ZoneId.of("UTC"));
+        ZonedDateTime zonedDateTimeStart = startDateTime.atZone(ZoneId.of("UTC"));
+        ZonedDateTime zonedDateTimeEnd = endDateTime.atZone(ZoneId.of("UTC"));
 
         // ISO 8601 형식으로 변환
         // 참고 : https://zhfvkq.tistory.com/37
@@ -236,9 +231,32 @@ public class MiniController {
                 .bodyToMono(String.class)
                 .block();
 
-        // json 파싱
         ObjectMapper objectMapper = new ObjectMapper();
-        OvertimeDto overtimeDto = objectMapper.readValue(response, OvertimeDto.class);
+        HolidayDto holidayDto = objectMapper.readValue(response, HolidayDto.class);
+
+        Set<LocalDate> holidays = new HashSet<>();
+
+        for (HolidayDto.EventSpecial eventSpecial : holidayDto.events) {
+            if (eventSpecial.isHoliday()) {
+                String startAt = eventSpecial.getTime().getStart_at();
+                ZonedDateTime startZoneDateTime = ZonedDateTime.parse(startAt, DateTimeFormatter.ISO_DATE_TIME);
+                LocalDate holiday = startZoneDateTime.toLocalDate();
+                holidays.add(holiday);
+            }
+        }
+
+        // 주말
+        int year = yearMonth.getYear();
+        int month = yearMonth.getMonthValue();
+
+        // 이번 달의 모든 날짜를 생성
+        List<LocalDate> datesOfMonth = IntStream.rangeClosed(1, yearMonth.lengthOfMonth())
+                .mapToObj(day -> LocalDate.of(year, month, day))
+                .filter(date -> date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY)
+                .collect(Collectors.toList());
+
+        holidays.addAll(datesOfMonth);
+        int size = holidays.size();
 
         return "ok";
     }

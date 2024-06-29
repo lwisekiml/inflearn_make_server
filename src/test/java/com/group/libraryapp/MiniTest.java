@@ -30,4 +30,15 @@ public class MiniTest {
 
 
     }
+
+    @Test
+    public void 날짜시간() {
+        String date = "2024-06-06T00:00:00Z";
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(date, DateTimeFormatter.ISO_DATE_TIME);
+
+        // ZonedDateTime에서 LocalDate로 변환
+        LocalDate localDate = zonedDateTime.toLocalDate();
+// 결과 출력
+        System.out.println("LocalDate: " + localDate);
+    }
 }

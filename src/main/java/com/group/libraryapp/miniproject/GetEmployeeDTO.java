@@ -64,4 +64,11 @@ public class GetEmployeeDTO {
         private LocalDate annual; // 2024-06-01
     }
 
+    @Data
+    @AllArgsConstructor
+    @RequiredArgsConstructor
+    public static class OvertimeEmployeeDTO { // 초과 근무
+        private YearMonth yearMonth; // 2024-06-01
+    }
+
 }
