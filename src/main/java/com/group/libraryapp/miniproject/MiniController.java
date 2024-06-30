@@ -10,7 +10,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.io.IOException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -118,9 +117,9 @@ public class MiniController {
             if (attendanceListIndex < attendanceList.size()
                     && LocalDate.of(year, month, date).equals(LocalDate.from(attendanceList.get(attendanceListIndex).getWorkEndDateTime()))) {
                 // 실제 상황에서는 밑에 세 줄은 필요없는 코드
-                LocalDateTime workStartDateTime = attendanceList.get(attendanceListIndex).getWorkStartDateTime();
-                LocalDateTime workEndDateTime = attendanceList.get(attendanceListIndex).getWorkEndDateTime();
-                attendanceList.get(attendanceListIndex).setWorkingMinutes((int)ChronoUnit.MINUTES.between(workStartDateTime, workEndDateTime));
+//                LocalDateTime workStartDateTime = attendanceList.get(attendanceListIndex).getWorkStartDateTime();
+//                LocalDateTime workEndDateTime = attendanceList.get(attendanceListIndex).getWorkEndDateTime();
+//                attendanceList.get(attendanceListIndex).setWorkingMinutes((int)ChronoUnit.MINUTES.between(workStartDateTime, workEndDateTime));
 
                 attendanceDtoList.add(AttendanceDto.toAttendanceDto(attendanceList.get(attendanceListIndex++)));
             } else {
@@ -200,7 +199,7 @@ public class MiniController {
     }
 
     @GetMapping("/overtime")
-    public String overtime(@RequestBody GetEmployeeDTO.OvertimeEmployeeDTO overtimeEmployeeDTO) throws IOException {
+    public List<EmployeeWorkingMinuteDto> overtime(@RequestBody GetEmployeeDTO.OvertimeEmployeeDTO overtimeEmployeeDTO) throws IOException {
 
         YearMonth yearMonth = overtimeEmployeeDTO.getYearMonth();
         LocalDateTime startDateTime = LocalDateTime.of(yearMonth.getYear(), yearMonth.getMonthValue(), 1, 0, 0, 1);
@@ -256,9 +255,17 @@ public class MiniController {
                 .collect(Collectors.toList());
 
         holidays.addAll(datesOfMonth);
-        int size = holidays.size();
+        int holidaySize = holidays.size();
 
-        return "ok";
+        // 기준 근무 시간(분) = (해당 월의 일 수 - holidaySize) * (8 * 60)분
+        int standardWorkingMinute = (yearMonth.lengthOfMonth() - holidaySize) * (8 * 60);
+
+        List<EmployeeWorkingMinuteDto> groupByWorkingMinutes = attendanceRepository
+                .findSumOfWorkingMinutesGroupByEmployee(yearMonth.toString());
+
+        groupByWorkingMinutes.forEach(dto -> dto.changeOvertimeMinutes(standardWorkingMinute));
+
+        return groupByWorkingMinutes;
     }
 }
 

@@ -49,21 +49,30 @@ public class TestDataInit {
                             employee1,
                             LocalDateTime.of(2024, 6, i, 9, 0),
                             LocalDateTime.of(2024, 6, i, 9, 0).plusHours(5),
-                            0,
+                            300,
+                            false
+                    )
+            );
+
+            attendanceRepository.save(new Attendance(
+                            employee1,
+                            LocalDateTime.of(2024, 5, i, 9, 0),
+                            LocalDateTime.of(2024, 5, i, 9, 0).plusHours(5),
+                            310,
                             false
                     )
             );
         }
 
-//        for (int i = 1; i <= LocalDate.now().getDayOfMonth(); i++) {
-//            attendanceRepository.save(new Attendance(
-//                            employee2,
-//                            LocalDateTime.of(2024, 6, i, 9, 0),
-//                            LocalDateTime.of(2024, 6, i, 9, 0).plusHours(7),
-//                            0,
-//                            false
-//                    )
-//            );
-//        }
+        for (int i = 1; i <= LocalDate.now().getDayOfMonth(); i++) {
+            attendanceRepository.save(new Attendance(
+                            employee2,
+                            LocalDateTime.of(2024, 6, i, 9, 0),
+                            LocalDateTime.of(2024, 6, i, 9, 0).plusHours(7),
+                            420,
+                            false
+                    )
+            );
+        }
     }
 }
