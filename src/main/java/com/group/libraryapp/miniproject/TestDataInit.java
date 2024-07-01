@@ -40,11 +40,10 @@ public class TestDataInit {
         employeeRepository.save(employee4);
         employeeRepository.save(employee5);
 
-        YearMonth yearMonth = YearMonth.from(LocalDate.now());
-//        yearMonth.lengthOfMonth();
-        int day = LocalDate.now().getDayOfMonth();
+        LocalDate localDate = LocalDate.of(2024, 6, 1);
+        YearMonth yearMonth = YearMonth.from(localDate);
 
-        for (int i = 1; i <= LocalDate.now().getDayOfMonth(); i++) {
+        for (int i = 1; i <= localDate.lengthOfMonth(); i++) {
             attendanceRepository.save(new Attendance(
                             employee1,
                             LocalDateTime.of(2024, 6, i, 9, 0),
@@ -64,7 +63,7 @@ public class TestDataInit {
             );
         }
 
-        for (int i = 1; i <= LocalDate.now().getDayOfMonth(); i++) {
+        for (int i = 1; i <= localDate.lengthOfMonth(); i++) {
             attendanceRepository.save(new Attendance(
                             employee2,
                             LocalDateTime.of(2024, 6, i, 9, 0),
