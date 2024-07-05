@@ -3,6 +3,7 @@ package com.group.libraryapp.miniproject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class MiniController {
@@ -32,6 +34,11 @@ public class MiniController {
 
     @GetMapping("/team")
     public List<GetTeamDTO> team() {
+        log.error("error from log");
+        log.warn( "warn from log");
+        log.info( "info from log");
+        log.debug("debug from log");
+        log.trace("trace from log");
         return teamRepository.findAll().stream().map(GetTeamDTO::toTeamDTO).collect(Collectors.toList());
     }
 

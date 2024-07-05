@@ -1,0 +1,114 @@
+<!--
+    로그 파일을 만들기 위한 필수 설정 xml
+    참고 : https://jhhan009.tistory.com/132
+-->
+<configuration>
+    <property resource="logback-variables.properties" />
+
+    <!--
+    로그 이벤트에 대한 timestamp 정의
+    로그 패턴에서 사용될 예정
+        datePattern : 날짜 포맷을 지정하는 패턴
+        'yyyyMMdd' 라고 했지만 본인 취향에 따라 'yyyy-MM-dd' 이런 식으로 해도 됩니다.
+    -->
+    <timestamp key="ToDay" datePattern="yyyyMMdd" />
+
+    <!--
+        appender 태그: 로그를 출력하기 위해 appender 정의.
+            name: 나중에 name을 통해 참조하게 됨
+            name="CONSOLE" 인 이유는 콘솔 출력을 위한 로깅 설정이기 때문
+        layout 태그 : 로그 메시지의 레이아웃을 어떻게 설정할 지 정의
+            이 부분에서는 '패턴 레이아웃'을 사용하게 설정함
+        Pattern 태그 : 어떤 패턴을 사용할지 정의하는 태그
+            LOG_PATTERN의 경우 아까 만들었던 logback-variables.properties에 들어있음.
+    -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                ${LOG_PATTERN}
+            </Pattern>
+        </layout>
+    </appender>
+
+    <!--
+        appender 태그 : 로그를 출력하기 위해 appender 정의
+            name="FILE1" 인 이유 → 파일 출력을 위한 로깅 설정이기 때문
+
+        filter 태그 : 특정 로그 레벨에서 사용하기 위한 필터 정의
+            level 태그 : 로그의 레벨을 정의할 수 있는 부분 (trace, debug, info, warn, error)
+            onMatch, onMismatch 태그 : 정의된 로그 레벨일 경우와 아닌 경우 어떻게 처리할 지 설정
+            ACCEPT : 로그 출력 진행
+            DENY : 로그 출력 안 함
+
+        file 태그 : 로그 파일에 대한 이름 및 경로 지정
+            LOG_PATH , LOG_FILE_NAME : ogback-variables.properties 파일에서 정의된 변수들
+
+        rollingPolicy 태그 : 롤링 정책 사용 & 로그 파일의 크기나 시간에 따라 파일 롤링 정책을 적용
+            간단히 말해 새로운 로그 파일이 언제 생기게 할지 설정
+            fileNamePattern 태그 : 롤링된 로그 파일의 이름 및 경로 지정
+                _%i를 통해서 생성된 파일 이름 세팅
+                (새로운 파일들은 _0, _1 이 뒤에 붙어서 생성됨)
+                해당 태그를 넣지 않으면 에러가 발생한다고 함. 반드시 설정해줘야 할 부분
+            maxFileSize 태그 : 파일의 최대 크기 설정 → 여기서는 10MB로 제한
+            maxHistory 태그 : 로그 파일의 최대 유지 개수 → 30일이 지나면 오래된 로그 순서대로 삭제
+
+        encoder 태그 : 로그 메시지의 출력 형식 지정
+            pattern 태그 안에 로그 메시지 출력 형식을 넣으면 됨
+    -->
+    <appender name="FILE1" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>info</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${LOG_PATH}/info/${ToDay}_${LOG_FILE_NAME}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>
+                ${LOG_PATH}/info/%d{yyyyMMdd}_${LOG_FILE_NAME}_%i.log
+            </fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+
+    <appender name="FILE2" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>error</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${LOG_PATH}/error/${ToDay}_${LOG_FILE_NAME}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>
+                ${LOG_PATH}/error/%d{yyyyMMdd}_${LOG_FILE_NAME}_%i.log
+            </fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!--
+        root 태그 : 루트 로거의 레벨 정의
+            level="INFO" : info로 정의했기 때문에 info 이상 단계의 로그만 출력
+
+        appender-ref 태그 : 앞에서 정의했던 appender 태그들을 참조
+            ref="{NAME}" : 앞에서 정의한 이름을 사용하면 됨
+
+        루트 로거의 경우 1개 만 지정 가능
+            여러번 설정해도 마지막에 선언한 것만 처리됨
+            루트 로거를 설정하지 않으면 로그에 아무것도 뜨지 않게 됨
+    -->
+    <root level="INFO">
+        <appender-ref ref="FILE1" />
+        <appender-ref ref="FILE2" />
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+</configuration>
